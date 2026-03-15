@@ -6,7 +6,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Invox Idea Marketplace"
-    _db_url: str = os.getenv("DATABASE_URL", "postgresql://postgres:ganesh@localhost:5432/invox_db")
+    _db_url: str = os.getenv("DATABASE_URL", "")
     DATABASE_URL: str = _db_url.replace("postgres://", "postgresql://", 1) if _db_url.startswith("postgres://") else _db_url
     SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey_change_in_production")
     ALGORITHM: str = "HS256"
