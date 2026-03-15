@@ -1,0 +1,16 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+fastapi[standard]
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic
+pydantic-settings
+python-dotenv
+requests
+pyjwt
+passlib
+bcrypt<4.0.0
+sentence-transformers
+torch
+python-multipart
+razorpay
