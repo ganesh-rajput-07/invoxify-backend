@@ -1,0 +1,29 @@
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+env/
+.venv/
+ENV/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Databases
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
