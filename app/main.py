@@ -35,3 +35,7 @@ def read_root():
         "status": "Online",
         "currency": "Invox (Ʉ)"
     }
+
+@app.get("/kaithheathcheck")
+def health():
+    return {"status": "ok"}
