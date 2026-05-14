@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Invox Idea Marketplace"
+    PROJECT_NAME: str = "InvenIO Idea Marketplace"
     _db_url: str = os.getenv("DATABASE_URL", "")
     DATABASE_URL: str = _db_url.replace("postgres://", "postgresql://", 1) if _db_url.startswith("postgres://") else _db_url
     SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey_change_in_production")
@@ -24,6 +24,6 @@ class Settings(BaseSettings):
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
     SMTP_USER: str = os.getenv("SMTP_USER", "")
     SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
-    MAIL_FROM: str = os.getenv("MAIL_FROM", "noreply@invox.com")
+    MAIL_FROM: str = os.getenv("MAIL_FROM", "noreply@invenio.com")
 
 settings = Settings()

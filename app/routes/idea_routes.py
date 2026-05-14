@@ -6,7 +6,7 @@ from app.schemas import idea_schema
 from app.routes.dependencies import get_current_user
 from app.utils.ipfs_client import upload_to_ipfs
 from app.ai.duplicate_detector import duplicate_detector
-from app.blockchain.blockchain import invox_ledger
+from app.blockchain.blockchain import invenio_ledger
 from app.blockchain.transaction import Transaction
 from app.utils.hashing import verify_password
 from app.utils.email import notify_system_fee
@@ -15,7 +15,12 @@ router = APIRouter(prefix="/api/ideas", tags=["Ideas"])
 
 @router.post("/check-duplicate", response_model=idea_schema.DuplicateCheckResponse)
 def check_duplicate(payload: dict, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    combined_text = payload.get("title", "") + " " + payload.get("problem_statement", "") + " " + payload.get("solution", "")
+    combined_text = (
+        f"{payload.get('title', '')} "
+        f"{payload.get('problem_statement', '')} "
+        f"{payload.get('solution', '')} "
+        f"{payload.get('keywords', '')}"
+    )
     new_embedding = duplicate_detector.generate_embedding(combined_text)
     
     existing_vectors = db.query(models.IdeaVector).all()
@@ -42,7 +47,11 @@ async def upload_idea(
     solution: str = Form(...),
     keywords: str = Form(...),
     category: str = Form(...),
+    sale_type: str = Form("both"),
     price: float = Form(...),
+    plan_1m_price: float = Form(None),
+    plan_3m_price: float = Form(None),
+    plan_6m_price: float = Form(None),
     password: str = Form(...), # Require exact password for PoW
     problem_id: str = Form(None), # Optional link to a problem statement
     file: UploadFile = File(None),
@@ -75,7 +84,7 @@ async def upload_idea(
 
     wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
     if not wallet or wallet.balance < mint_fee:
-        raise HTTPException(status_code=400, detail=f"Insufficient Invox balance. Tokenizing a {category} idea requires {mint_fee} Ʉ.")
+        raise HTTPException(status_code=400, detail=f"Insufficient InvenIO balance. Tokenizing a {category} idea requires {mint_fee} Ʉ.")
 
     # Deduct the minting fee from the user's wallet (Proof of Work/System Burn)
     wallet.balance -= mint_fee
@@ -98,7 +107,8 @@ async def upload_idea(
     # 3. Create DB Record
     new_idea = models.Idea(
         title=title, problem_statement=problem_statement, research_info=research_info,
-        solution=solution, keywords=keywords, category=category, price=price,
+        solution=solution, keywords=keywords, category=category, sale_type=sale_type, price=price,
+        plan_1m_price=plan_1m_price, plan_3m_price=plan_3m_price, plan_6m_price=plan_6m_price,
         owner_id=current_user.id, ipfs_hash=ipfs_cid,
         problem_id=problem_id if problem_id else None
     )
@@ -119,8 +129,8 @@ async def upload_idea(
         tx_type="idea_creation",
         metadata={"idea_id": str(new_idea.idea_id), "ipfs": ipfs_cid, "timestamp": new_idea.created_at.isoformat()}
     )
-    tx_hash = invox_ledger.add_transaction(blockchain_tx)
-    invox_ledger.mine_pending_transactions()
+    tx_hash = invenio_ledger.add_transaction(blockchain_tx)
+    invenio_ledger.mine_pending_transactions()
     
     # Update fee transaction hash with the real blockchain hash
     fee_tx.tx_hash = tx_hash
@@ -130,3 +140,23 @@ async def upload_idea(
     notify_system_fee(current_user.email, mint_fee, f"Tokenization of '{title}'")
 
     return new_idea
+
+@router.put("/{idea_id}/pricing", response_model=idea_schema.IdeaResponse)
+def update_idea_pricing(idea_id: str, payload: idea_schema.IdeaPricingUpdate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    idea = db.query(models.Idea).filter(models.Idea.idea_id == idea_id).first()
+    if not idea:
+        raise HTTPException(status_code=404, detail="Idea not found")
+        
+    if idea.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized to update this idea")
+        
+    update_data = payload.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(idea, key, value)
+        
+    db.commit()
+    db.refresh(idea)
+    
+    # Needs to be formatted properly for response
+    setattr(idea, "is_unlocked", True)
+    return idea

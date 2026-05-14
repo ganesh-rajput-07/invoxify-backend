@@ -62,8 +62,13 @@ class Idea(Base):
     category = Column(String)
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     price = Column(Float, default=0.0)
+    sale_type = Column(String, default="both")
     ipfs_hash = Column(String, nullable=True)
     problem_id = Column(UUID(as_uuid=True), ForeignKey("problems.id"), nullable=True) # Optional link to a specific Problem
+    is_public = Column(Boolean, default=True)
+    plan_1m_price = Column(Float, nullable=True)
+    plan_3m_price = Column(Float, nullable=True)
+    plan_6m_price = Column(Float, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="ideas")
@@ -77,7 +82,12 @@ class IdeaPurchase(Base):
     buyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     price = Column(Float)
     tx_id = Column(UUID(as_uuid=True), ForeignKey("transactions.id"))
+    plan_duration_months = Column(Integer, nullable=True)
+    expiry_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    buyer = relationship("User", foreign_keys=[buyer_id])
+    idea = relationship("Idea", foreign_keys=[idea_id])
 
 class Block(Base):
     __tablename__ = "blocks"
@@ -178,6 +188,22 @@ class UserQuery(Base):
     is_resolved = Column(Boolean, default=False)
     admin_note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class OwnershipBid(Base):
+    __tablename__ = "ownership_bids"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    idea_id = Column(UUID(as_uuid=True), ForeignKey("ideas.idea_id"))
+    bidder_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    price = Column(Float)
+    status = Column(String, default="pending") # pending, countered, accepted, rejected, cancelled, completed
+    counter_price = Column(Float, nullable=True) # Price proposed by seller
+    last_action_by = Column(String, default="buyer") # 'buyer' or 'seller'
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    idea = relationship("Idea", backref="bids")
+    bidder = relationship("User", foreign_keys=[bidder_id])
 
 class SystemSetting(Base):
     __tablename__ = "system_settings"

@@ -4,7 +4,7 @@ from app.database.connection import get_db
 from app.database import models
 from app.schemas import wallet_schema
 from app.routes.dependencies import get_current_user
-from app.blockchain.blockchain import invox_ledger
+from app.blockchain.blockchain import invenio_ledger
 from app.blockchain.transaction import Transaction
 
 router = APIRouter(prefix="/api/wallet", tags=["Wallet"])
@@ -27,7 +27,7 @@ def create_razorpay_order(payload: dict, current_user: models.User = Depends(get
     if amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be > 0")
 
-    # Assuming 1 INVOX = 1 INR (or USD depending on currency config)
+    # Assuming 1 INVENIO = 1 INR (or USD depending on currency config)
     # Razorpay expects amount in paise (multiply by 100)
     order_amount = int(amount * 100)
     order_currency = "INR"
@@ -73,7 +73,7 @@ def verify_payment(payload: dict, current_user: models.User = Depends(get_curren
     if not wallet:
         raise HTTPException(status_code=404, detail="Wallet not found")
 
-    # Grant INVOX tokens equal to the amount purchased
+    # Grant INVENIO tokens equal to the amount purchased
     wallet.balance += amount
     
     # Add transaction to DB
@@ -93,14 +93,14 @@ def verify_payment(payload: dict, current_user: models.User = Depends(get_curren
         tx_type="fiat_purchase",
         metadata={"payment_id": razorpay_payment_id}
     )
-    tx_hash = invox_ledger.add_transaction(blockchain_tx)
+    tx_hash = invenio_ledger.add_transaction(blockchain_tx)
     new_tx.tx_hash = tx_hash
 
     db.commit()
     db.refresh(wallet)
     
     # Mine the block automatically for the demo
-    invox_ledger.mine_pending_transactions()
+    invenio_ledger.mine_pending_transactions()
 
     return wallet
 
@@ -138,11 +138,11 @@ def claim_test_tokens(current_user: models.User = Depends(get_current_user), db:
         amount=amount_to_add,
         tx_type="test_claim"
     )
-    tx_hash = invox_ledger.add_transaction(blockchain_tx)
+    tx_hash = invenio_ledger.add_transaction(blockchain_tx)
     new_tx.tx_hash = tx_hash
 
     db.commit()
-    invox_ledger.mine_pending_transactions()
+    invenio_ledger.mine_pending_transactions()
 
     return {"message": f"Successfully claimed {amount_to_add} test tokens!", "new_balance": wallet.balance}
 
@@ -160,11 +160,11 @@ def purchase_test_tokens(payload: dict, current_user: models.User = Depends(get_
     db.add(new_tx)
     
     blockchain_tx = Transaction(from_wallet="TestGateway", to_wallet=str(wallet.wallet_id), amount=amount, tx_type="test_purchase")
-    tx_hash = invox_ledger.add_transaction(blockchain_tx)
+    tx_hash = invenio_ledger.add_transaction(blockchain_tx)
     new_tx.tx_hash = tx_hash
     
     db.commit()
-    invox_ledger.mine_pending_transactions()
+    invenio_ledger.mine_pending_transactions()
     return {"message": f"Added {amount} tokens", "new_balance": wallet.balance}
 
 @router.get("/test-mode-status")

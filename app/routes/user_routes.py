@@ -4,7 +4,7 @@ from app.database import models
 from app.schemas import user_schema
 from app.utils.email import notify_query_submitted, notify_withdrawal_requested
 from app.routes.dependencies import get_current_user
-from app.blockchain.blockchain import invox_ledger
+from app.blockchain.blockchain import invenio_ledger
 from app.blockchain.transaction import Transaction
 from app.database.connection import get_db
 from pydantic import BaseModel, Field
@@ -110,8 +110,8 @@ def toggle_email_visibility(payload: ToggleEmailPayload, current_user: models.Us
             tx_type="email_public_fee",
             metadata={"user_id": str(current_user.id)}
         )
-        tx_hash = invox_ledger.add_transaction(blockchain_tx)
-        invox_ledger.mine_pending_transactions()
+        tx_hash = invenio_ledger.add_transaction(blockchain_tx)
+        invenio_ledger.mine_pending_transactions()
         
         new_tx.tx_hash = tx_hash
         db.commit()
@@ -140,7 +140,7 @@ def reveal_email(user_id: str, current_user: models.User = Depends(get_current_u
     viewer_wallet = db.query(models.Wallet).filter(models.Wallet.user_id == current_user.id).first()
     creator_wallet = db.query(models.Wallet).filter(models.Wallet.user_id == creator.id).first()
     
-    price = 2.0  # 2 Invox tokens to reveal
+    price = 2.0  # 2 InvenIO tokens to reveal
     if viewer_wallet.balance < price:
         raise HTTPException(status_code=400, detail=f"Cost is {price} Ʉ. Insufficient token balance to reveal email.")
         
@@ -163,8 +163,8 @@ def reveal_email(user_id: str, current_user: models.User = Depends(get_current_u
         metadata={"creator_id": user_id, "viewer_id": str(current_user.id)}
     )
     
-    tx_hash = invox_ledger.add_transaction(blockchain_tx)
-    invox_ledger.mine_pending_transactions()
+    tx_hash = invenio_ledger.add_transaction(blockchain_tx)
+    invenio_ledger.mine_pending_transactions()
     
     new_tx.tx_hash = tx_hash
     db.commit()

@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 from app.config.settings import settings
 
 def get_html_template(title: str, content: str):
-    """Wraps content in a professional Invox branded HTML template."""
+    """Wraps content in a professional InvenIO branded HTML template."""
     return f"""
     <html>
     <head>
@@ -21,16 +21,16 @@ def get_html_template(title: str, content: str):
     <body>
         <div class="container">
             <div class="header">
-                <h1 style="margin:0; font-size: 24px; letter-spacing: 1px;">INVOX ECOSYSTEM</h1>
+                <h1 style="margin:0; font-size: 24px; letter-spacing: 1px;">INVENIO ECOSYSTEM</h1>
                 <p style="margin:5px 0 0 0; opacity: 0.8; font-size: 14px;">Secure Intellectual Property Ledger</p>
             </div>
             <div class="content">
                 <h2 style="color: #0F172A; margin-top: 0;">{title}</h2>
                 {content}
-                <p style="margin-top: 30px;">Best Regards,<br><span class="highlight">Invox Operations Team</span></p>
+                <p style="margin-top: 30px;">Best Regards,<br><span class="highlight">InvenIO Operations Team</span></p>
             </div>
             <div class="footer">
-                &copy; 2026 Invox Global Ledger Services. All rights reserved.<br>
+                &copy; 2026 InvenIO Global Ledger Services. All rights reserved.<br>
                 This is an automated notification. Please do not reply directly to this email.
             </div>
         </div>
@@ -38,7 +38,7 @@ def get_html_template(title: str, content: str):
     </html>
     """
 
-def send_invox_email(to_email: str, subject: str, body: str, is_html: bool = False):
+def send_invenio_email(to_email: str, subject: str, body: str, is_html: bool = False):
     """Base function to send automated platform emails."""
     if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
         print(f"\n[EMAIL MOCK] To: {to_email}")
@@ -48,7 +48,7 @@ def send_invox_email(to_email: str, subject: str, body: str, is_html: bool = Fal
 
     msg = MIMEMultipart()
     try:
-        msg['From'] = f"Invox Ecosystem <{settings.MAIL_FROM}>"
+        msg['From'] = f"InvenIO Ecosystem <{settings.MAIL_FROM}>"
         msg['To'] = to_email
         msg['Subject'] = subject
         
@@ -71,21 +71,21 @@ def send_password_reset_email(to_email: str, token: str, origin: str):
     title = "Password Reset Request"
     reset_link = f"{origin}/reset-password/{token}"
     content = f"""
-    <p>We received a request to reset the password for your Invox account.</p>
+    <p>We received a request to reset the password for your InvenIO account.</p>
     <p>Please click the button below to establish new credentials. This link is valid for <span class="highlight">60 minutes</span>.</p>
     <div style="text-align: center;">
         <a href="{reset_link}" class="button">Reset Password</a>
     </div>
     <p style="font-size: 12px; color: #94a3b8; margin-top: 20px;">If you did not request this, you can safely ignore this email. Your account remains secure.</p>
     """
-    return send_invox_email(to_email, "Security: Password Reset Request", get_html_template(title, content), is_html=True)
+    return send_invenio_email(to_email, "Security: Password Reset Request", get_html_template(title, content), is_html=True)
 
 # --- Specific Notifications ---
 
 def notify_query_submitted(email: str, ticket_id: str, subject: str, message: str):
     title = "Support Ticket Created"
     content = f"""
-    <p>Your technical query has been successfully broadcasted to the Invox admin nodes.</p>
+    <p>Your technical query has been successfully broadcasted to the InvenIO admin nodes.</p>
     <p><span class="highlight">Ticket ID:</span> <span class="ticket-badge">#{ticket_id[:8].upper()}</span></p>
     <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
         <p style="margin:0; font-weight:bold;">{subject}</p>
@@ -93,7 +93,7 @@ def notify_query_submitted(email: str, ticket_id: str, subject: str, message: st
     </div>
     <p>Our core developers are currently analyzing your request. You will receive a notification as soon as the issue is resolved on the ledger.</p>
     """
-    return send_invox_email(email, f"Support Ticket [#{ticket_id[:8].upper()}]", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, f"Support Ticket [#{ticket_id[:8].upper()}]", get_html_template(title, content), is_html=True)
 
 def notify_query_resolved(email: str, ticket_id: str, admin_note: str = ""):
     title = "Issue Resolved"
@@ -105,12 +105,12 @@ def notify_query_resolved(email: str, ticket_id: str, admin_note: str = ""):
     </div>
     <p>If you continue to experience difficulties, please open a secondary ticket from your command center.</p>
     """
-    return send_invox_email(email, "Update: Support Ticket Resolved", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, "Update: Support Ticket Resolved", get_html_template(title, content), is_html=True)
 
 def notify_withdrawal_requested(email: str, amount: float, method: str):
     title = "Withdrawal Initiation"
     content = f"""
-    <p>A new withdrawal request has been registered on the Invox Ledger.</p>
+    <p>A new withdrawal request has been registered on the InvenIO Ledger.</p>
     <ul style="list-style: none; padding: 0;">
         <li><span class="highlight">Amount:</span> Ʉ {amount:.2f}</li>
         <li><span class="highlight">Target Method:</span> {method}</li>
@@ -120,7 +120,7 @@ def notify_withdrawal_requested(email: str, amount: float, method: str):
         <strong>Note:</strong> These tokens are now <b>LOCKED</b> and removed from your active circulation until the request is finalized.
     </p>
     """
-    return send_invox_email(email, "Wallet: Withdrawal Request Registered", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, "Wallet: Withdrawal Request Registered", get_html_template(title, content), is_html=True)
 
 def notify_withdrawal_processed(email: str, amount: float, status: str, note: str = ""):
     is_approved = status.lower() == "approved"
@@ -137,7 +137,7 @@ def notify_withdrawal_processed(email: str, amount: float, status: str, note: st
     </div>
     <p>{ "Please allow 1-3 business days for the funds to reflect in your target account." if is_approved else "The locked tokens have been immediately returned to your available wallet balance." }</p>
     """
-    return send_invox_email(email, f"Wallet Update: {status.capitalize()}", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, f"Wallet Update: {status.capitalize()}", get_html_template(title, content), is_html=True)
 
 def notify_token_purchase(email: str, amount: float, item_name: str):
     title = "Purchase Confirmed"
@@ -150,7 +150,7 @@ def notify_token_purchase(email: str, amount: float, item_name: str):
     </ul>
     <p>The asset ownership has been transferred to your digital vault.</p>
     """
-    return send_invox_email(email, "Ledger: Purchase Successful", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, "Ledger: Purchase Successful", get_html_template(title, content), is_html=True)
 
 def notify_system_fee(email: str, amount: float, purpose: str):
     title = "System Fee Deduction"
@@ -161,7 +161,60 @@ def notify_system_fee(email: str, amount: float, purpose: str):
         <li><span class="highlight">Fee Amount:</span> Ʉ {amount:.2f}</li>
         <li><span class="highlight">Status:</span> Burned / System Reward</li>
     </ul>
-    <p style="font-size: 12px; color: #94a3b8;">This transaction is immutable and recorded on the Invox public ledger.</p>
+    <p style="font-size: 12px; color: #94a3b8;">This transaction is immutable and recorded on the InvenIO public ledger.</p>
     """
-    return send_invox_email(email, "System: Fee Deduction Registered", get_html_template(title, content), is_html=True)
+    return send_invenio_email(email, "System: Fee Deduction Registered", get_html_template(title, content), is_html=True)
+
+def notify_bid_placed(owner_email: str, idea_title: str, bidder_name: str, amount: float):
+    title = "New Ownership Offer"
+    content = f"""
+    <p>A new offer has been broadcasted for your asset <span class="highlight">{idea_title}</span>.</p>
+    <ul style="list-style: none; padding: 0;">
+        <li><span class="highlight">Prospect:</span> {bidder_name}</li>
+        <li><span class="highlight">Bid Amount:</span> Ʉ {amount:.2f}</li>
+        <li><span class="highlight">Status:</span> Open for Negotiation</li>
+    </ul>
+    <p>Visit your command center to approve or decline this offer.</p>
+    """
+    return send_invenio_email(owner_email, "Marketplace: New Offer Received", get_html_template(title, content), is_html=True)
+
+def notify_bid_approved(bidder_email: str, idea_title: str, amount: float):
+    title = "Ownership Secured"
+    content = f"""
+    <p>Congratulations! Your ownership bid for <span class="highlight">{idea_title}</span> has been <b>APPROVED</b> by the creator.</p>
+    <ul style="list-style: none; padding: 0;">
+        <li><span class="highlight">Settlement:</span> Ʉ {amount:.2f}</li>
+        <li><span class="highlight">Status:</span> Ownership Transferred</li>
+    </ul>
+    <p>The asset has been moved to your digital vault and the transaction is recorded on the blockchain ledger.</p>
+    """
+    return send_invenio_email(bidder_email, "Marketplace: Bid Approved & Transferred", get_html_template(title, content), is_html=True)
+
+def notify_bid_declined(bidder_email: str, idea_title: str):
+    title = "Offer Declined"
+    content = f"""
+    <p>Your ownership bid for <span class="highlight">{idea_title}</span> has been declined by the current owner.</p>
+    <p>No tokens were deducted from your account. You can explore other opportunities in the marketplace.</p>
+    """
+    return send_invenio_email(bidder_email, "Marketplace: Bid Declined", get_html_template(title, content), is_html=True)
+
+def notify_bid_cancelled(owner_email: str, idea_title: str, bidder_name: str):
+    title = "Offer Withdrawn"
+    content = f"""
+    <p>An ownership bid for your asset <span class="highlight">{idea_title}</span> has been cancelled by <span class="highlight">{bidder_name}</span>.</p>
+    <p>The offer is no longer active in the ledger.</p>
+    """
+    return send_invenio_email(owner_email, "Marketplace: Bid Cancelled", get_html_template(title, content), is_html=True)
+
+def notify_counter_offer(email: str, idea_title: str, offer_amount: float, from_name: str):
+    title = "New Counter Offer"
+    content = f"""
+    <p>A counter-offer has been made for <span class="highlight">{idea_title}</span> by <span class="highlight">{from_name}</span>.</p>
+    <ul style="list-style: none; padding: 0;">
+        <li><span class="highlight">New Proposed Price:</span> Ʉ {offer_amount:.2f}</li>
+        <li><span class="highlight">Status:</span> Negotiation Active</li>
+    </ul>
+    <p>Please visit your dashboard to accept, reject, or provide another counter-offer.</p>
+    """
+    return send_invenio_email(email, "Marketplace: Counter Offer Received", get_html_template(title, content), is_html=True)
 

@@ -57,4 +57,4 @@ class Blockchain:
         return True
 
 # Instantiate a global internal ledger
-invox_ledger = Blockchain()
+invenio_ledger = Blockchain()
