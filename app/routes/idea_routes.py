@@ -13,6 +13,21 @@ from app.utils.email import notify_system_fee
 
 router = APIRouter(prefix="/api/ideas", tags=["Ideas"])
 
+from pydantic import BaseModel
+class PreviewRequest(BaseModel):
+    title: str
+    problem_statement: str
+    solution: str
+    research_info: str
+    keywords: str
+
+@router.post("/generate-preview")
+def generate_preview(payload: PreviewRequest, current_user: models.User = Depends(get_current_user)):
+    from app.ai.preview_generator import generate_extractive_preview
+    combined_text = f"{payload.problem_statement} {payload.solution} {payload.research_info}"
+    snippet = generate_extractive_preview(payload.title, combined_text, num_sentences=3)
+    return {"snippet": snippet}
+
 @router.post("/check-duplicate", response_model=idea_schema.DuplicateCheckResponse)
 def check_duplicate(payload: dict, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     combined_text = (
@@ -42,6 +57,7 @@ def check_duplicate(payload: dict, current_user: models.User = Depends(get_curre
 @router.post("/upload")
 async def upload_idea(
     title: str = Form(...),
+    snippet: str = Form(None),
     problem_statement: str = Form(...),
     research_info: str = Form(...),
     solution: str = Form(...),
@@ -106,7 +122,7 @@ async def upload_idea(
 
     # 3. Create DB Record
     new_idea = models.Idea(
-        title=title, problem_statement=problem_statement, research_info=research_info,
+        title=title, snippet=snippet, problem_statement=problem_statement, research_info=research_info,
         solution=solution, keywords=keywords, category=category, sale_type=sale_type, price=price,
         plan_1m_price=plan_1m_price, plan_3m_price=plan_3m_price, plan_6m_price=plan_6m_price,
         owner_id=current_user.id, ipfs_hash=ipfs_cid,

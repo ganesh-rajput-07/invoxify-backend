@@ -55,6 +55,7 @@ class Idea(Base):
 
     idea_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = Column(String, index=True)
+    snippet = Column(Text, nullable=True)
     problem_statement = Column(Text)
     research_info = Column(Text)
     solution = Column(Text)

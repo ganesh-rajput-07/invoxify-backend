@@ -6,6 +6,7 @@ from app.schemas.user_schema import UserResponse
 
 class IdeaCreate(BaseModel):
     title: str
+    snippet: Optional[str] = None
     problem_statement: str
     research_info: str
     solution: str
@@ -27,6 +28,7 @@ class IdeaPricingUpdate(BaseModel):
 class IdeaResponse(BaseModel):
     idea_id: UUID
     title: str
+    snippet: Optional[str] = None
     problem_statement: str
     research_info: str
     solution: str
